@@ -1,0 +1,2995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Trámites Vehiculares</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #17a2b8;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --primary: #1a1a1a;
+            --secondary: #4a90e2;
+            --light: #2d2d2d;
+            --dark: #f8f9fa;
+            --gradient-primary: linear-gradient(135deg, #434343 0%, #000000 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            transition: var(--transition);
+        }
+
+        /* Pantalla de Login */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .auth-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-group .input-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--secondary);
+            border: 2px solid var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .auth-links a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Dashboard Principal */
+        .main-container {
+            display: none;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+
+        .main-container.active {
+            display: block;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            min-width: 200px;
+            padding: 0.5rem 0;
+            display: none;
+            z-index: 1000;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--dark);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .dropdown-item:hover {
+            background: var(--light);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--dark);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: var(--light);
+        }
+
+        /* Dashboard Stats */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.primary { background: var(--gradient-primary); }
+        .stat-icon.success { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-icon.warning { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .stat-icon.danger { background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%); }
+
+        .stat-content h3 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-content p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 0;
+        }
+        
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: var(--transition);
+            z-index: -1;
+        }
+        
+        .tab.active::before {
+            left: 0;
+        }
+
+        .tab.active {
+            color: white;
+            font-weight: bold;
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: var(--light);
+            transform: translateY(-2px);
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 0.5rem;
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .search-bar button {
+            padding: 0.75rem 1rem;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-bar button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-new {
+            padding: 0.75rem 1.5rem;
+            background: var(--gradient-secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-new:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--light);
+            border-radius: var(--border-radius);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+        
+        .filter-group label {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .filter-group select {
+            padding: 0.5rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        th, td {
+            padding: 1rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        th {
+            background: var(--gradient-primary);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .btn-view {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-edit {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background-color: #e67e22;
+            transform: translateY(-1px);
+        }
+        
+        .btn-delete {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #c0392b;
+            transform: translateY(-1px);
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+        }
+        
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--danger);
+            transition: var(--transition);
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+
+        .close:hover {
+            background: rgba(231, 76, 60, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--light);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 0.5rem;
+        }
+        
+        .page-btn {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--secondary);
+            background-color: white;
+            color: var(--secondary);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .page-btn:hover {
+            background-color: var(--secondary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .page-btn.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .status-pendiente { color: var(--warning); font-weight: bold; }
+        .status-realizado { color: var(--success); font-weight: bold; }
+        .status-archivado { color: var(--dark); font-weight: bold; }
+        .status-devolucion { color: var(--danger); font-weight: bold; }
+        .status-enviado { color: var(--secondary); font-weight: bold; }
+        .status-vencida { color: var(--danger); font-weight: bold; }
+        .status-en-proceso { color: var(--warning); font-weight: bold; }
+        .status-aceptado { color: var(--success); font-weight: bold; }
+        
+        .financial-info {
+            display: flex;
+            justify-content: space-between;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .saldo-positive { color: var(--success); font-weight: bold; }
+        .saldo-negative { color: var(--danger); font-weight: bold; }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--success);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 350px;
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        .toast.info {
+            border-left-color: var(--info);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
+                font-size: 0.9rem;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .search-bar {
+                max-width: 100%;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            table {
+                font-size: 0.8rem;
+            }
+            
+            th, td {
+                padding: 0.5rem;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar .container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animaciones adicionales */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.375rem;
+            color: white;
+        }
+
+        .status-badge.status-pendiente { background-color: var(--warning); }
+        .status-badge.status-realizado { background-color: var(--success); }
+        .status-badge.status-archivado { background-color: var(--dark); }
+        .status-badge.status-devolucion { background-color: var(--danger); }
+        .status-badge.status-enviado { background-color: var(--secondary); }
+        .status-badge.status-vencida { background-color: var(--danger); }
+        .status-badge.status-en-proceso { background-color: var(--warning); }
+        .status-badge.status-aceptado { background-color: var(--success); }
+
+        .date-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .date-btn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            z-index: 1;
+        }
+
+        .date-btn:hover {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Pantalla de Autenticación -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1><i class="fas fa-car"></i> Sistema de Trámites</h1>
+                <p>Gestión Vehicular Inteligente</p>
+            </div>
+            
+            <!-- Formulario de Login -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Usuario</label>
+                    <input type="text" id="loginEmail" required placeholder="Ingrese su usuario">
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" required placeholder="Ingrese su contraseña">
+                    <i class="fas fa-eye input-icon" id="togglePassword"></i>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Iniciar Sesión
+                </button>
+                
+                <div class="auth-links">
+                    <p>¿No tienes cuenta? <a href="#" id="showRegister">Regístrate aquí</a></p>
+                </div>
+            </form>
+            
+            <!-- Formulario de Registro -->
+            <form id="registerForm" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label for="registerName">Nombre Completo</label>
+                    <input type="text" id="registerName" required placeholder="Ingrese su nombre completo">
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerUser">Usuario</label>
+                    <input type="text" id="registerUser" required placeholder="Ingrese un nombre de usuario">
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerPassword">Contraseña</label>
+                    <input type="password" id="registerPassword" required placeholder="Ingrese una contraseña">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Contraseña</label>
+                    <input type="password" id="confirmPassword" required placeholder="Confirme su contraseña">
+                </div>
+                
+                <div class="form-group">
+                    <label for="userRole">Rol</label>
+                    <select id="userRole" required>
+                        <option value="">Seleccionar rol</option>
+                        <option value="empleado">Empleado</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="userBranch">Sucursal</label>
+                    <select id="userBranch" required>
+                        <option value="">Seleccionar sucursal</option>
+                        <option value="sucursal1">Sucursal 1</option>
+                        <option value="sucursal2">Sucursal 2</option>
+                        <option value="sucursal3">Sucursal 3</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    Crear Cuenta
+                </button>
+                
+                <div class="auth-links">
+                    <p>¿Ya tienes cuenta? <a href="#" id="showLogin">Inicia sesión aquí</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Principal -->
+    <div class="main-container" id="mainContainer">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <i class="fas fa-car"></i> Sistema de Trámites Vehiculares
+                </div>
+                <div class="navbar-nav">
+                    <!-- Selector de Sucursal (solo para admin) -->
+                    <div id="branchSelector" style="display: none;">
+                        <select id="currentBranch" onchange="cambiarSucursal()">
+                            <option value="sucursal1">Sucursal 1</option>
+                            <option value="sucursal2">Sucursal 2</option>
+                            <option value="sucursal3">Sucursal 3</option>
+                        </select>
+                    </div>
+                    
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-menu">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <div class="dropdown-menu" id="userDropdown">
+                            <a href="#" class="dropdown-item" id="userProfile">
+                                <i class="fas fa-user"></i> Mi Perfil
+                            </a>
+                            <a href="#" class="dropdown-item" id="userSettings">
+                                <i class="fas fa-cog"></i> Configuración
+                            </a>
+                            <div style="border-top: 1px solid #eee; margin: 0.5rem 0;"></div>
+                            <a href="#" class="dropdown-item" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- Dashboard Stats -->
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalTramites">0</h3>
+                        <p>Total Trámites</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="tramitesRealizados">0</h3>
+                        <p>Trámites Realizados</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="tramitesPendientes">0</h3>
+                        <p>Trámites Pendientes</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="tramitesVencidos">0</h3>
+                        <p>Trámites Vencidos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" data-tab="paquetes">
+                    <i class="fas fa-shipping-fast"></i> Paquetes y Trámites
+                </div>
+                <div class="tab" data-tab="licencias">
+                    <i class="fas fa-id-card"></i> Licencias
+                </div>
+                <div class="tab" data-tab="ordenes">
+                    <i class="fas fa-truck"></i> Órdenes de Salida
+                </div>
+                <div class="tab" data-tab="comparendos">
+                    <i class="fas fa-gavel"></i> Comparendos
+                </div>
+                <div class="tab" data-tab="procesos">
+                    <i class="fas fa-balance-scale"></i> Procesos Jurídicos
+                </div>
+            </div>
+            
+            <!-- Tab de Paquetes y Trámites -->
+            <div class="tab-content active" id="paquetes">
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <input type="text" id="searchPaquetes" placeholder="Buscar en paquetes y trámites...">
+                        <button onclick="buscarPaquetes()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-export" onclick="exportarDatos('paquetes')">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                        <button class="btn-new" onclick="abrirModal('paquetes')">
+                            <i class="fas fa-plus"></i> Nuevo Trámite
+                        </button>
+                    </div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Placa</th>
+                            <th>Tipo Trámite</th>
+                            <th>Destino</th>
+                            <th>Cliente</th>
+                            <th>Propietario</th>
+                            <th>F. Ingreso</th>
+                            <th>F. Envío</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paquetes-table">
+                        <!-- Los datos se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Tab de Licencias -->
+            <div class="tab-content" id="licencias">
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <input type="text" id="searchLicencias" placeholder="Buscar en licencias...">
+                        <button onclick="buscarLicencias()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-export" onclick="exportarDatos('licencias')">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                        <button class="btn-new" onclick="abrirModal('licencias')">
+                            <i class="fas fa-plus"></i> Nueva Licencia
+                        </button>
+                    </div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre Cliente</th>
+                            <th>Documento</th>
+                            <th>Tipo Trámite</th>
+                            <th>Categoría</th>
+                            <th>Escuela</th>
+                            <th>Valor Oficina</th>
+                            <th>Valor Abono</th>
+                            <th>Saldo</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="licencias-table">
+                        <!-- Los datos se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Tab de Órdenes de Salida -->
+            <div class="tab-content" id="ordenes">
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <input type="text" id="searchOrdenes" placeholder="Buscar en órdenes...">
+                        <button onclick="buscarOrdenes()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-export" onclick="exportarDatos('ordenes')">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                        <button class="btn-new" onclick="abrirModal('ordenes')">
+                            <i class="fas fa-plus"></i> Nueva Orden
+                        </button>
+                    </div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Cédula</th>
+                            <th>Placa</th>
+                            <th>F. Ingreso</th>
+                            <th>F. Salida</th>
+                            <th>Valor Oficina</th>
+                            <th>Valor Abono</th>
+                            <th>Saldo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordenes-table">
+                        <!-- Los datos se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Tab de Comparendos -->
+            <div class="tab-content" id="comparendos">
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <input type="text" id="searchComparendos" placeholder="Buscar en comparendos...">
+                        <button onclick="buscarComparendos()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-export" onclick="exportarDatos('comparendos')">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                        <button class="btn-new" onclick="abrirModal('comparendos')">
+                            <i class="fas fa-plus"></i> Nuevo Comparendo
+                        </button>
+                    </div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Cédula</th>
+                            <th>Placa</th>
+                            <th>Ciudad</th>
+                            <th>Fecha</th>
+                            <th>Valor Oficina</th>
+                            <th>Valor Abono</th>
+                            <th>Saldo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparendos-table">
+                        <!-- Los datos se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Tab de Procesos Jurídicos -->
+            <div class="tab-content" id="procesos">
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <input type="text" id="searchProcesos" placeholder="Buscar en procesos...">
+                        <button onclick="buscarProcesos()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-export" onclick="exportarDatos('procesos')">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                        <button class="btn-new" onclick="abrirModal('procesos')">
+                            <i class="fas fa-plus"></i> Nuevo Proceso
+                        </button>
+                    </div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Cédula</th>
+                            <th>Proceso</th>
+                            <th>F. Radicación</th>
+                            <th>Vencimiento</th>
+                            <th>Días Faltantes</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="procesos-table">
+                        <!-- Los datos se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para formularios -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Nuevo Registro</h2>
+                <span class="close" onclick="cerrarModal()">&times;</span>
+            </div>
+            <div id="modal-body">
+                <!-- El contenido del formulario se cargará aquí -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Perfil -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Mi Perfil</h2>
+                <span class="close" onclick="cerrarPerfilModal()">&times;</span>
+            </div>
+            <div id="profile-body">
+                <!-- El contenido del perfil se cargará aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN JSONBIN.IO - REEMPLAZA CON TUS DATOS
+        const JSONBIN_BIN_ID = '67b6a9e7ad19ca34f86e6a6e'; // REEMPLAZA con tu Bin ID
+        const JSONBIN_API_KEY = '$2a$10$tu-api-key-aqui'; // REEMPLAZA con tu API Key
+
+        // Variables globales
+        let currentUser = null;
+        let currentBranch = 'sucursal1';
+        let registroEditando = null;
+        let tipoEditando = null;
+        
+        let data = {
+            sucursal1: {
+                paquetes: [],
+                licencias: [],
+                ordenes: [],
+                comparendos: [],
+                procesos: []
+            },
+            sucursal2: {
+                paquetes: [],
+                licencias: [],
+                ordenes: [],
+                comparendos: [],
+                procesos: []
+            },
+            sucursal3: {
+                paquetes: [],
+                licencias: [],
+                ordenes: [],
+                comparendos: [],
+                procesos: []
+            }
+        };
+
+        // =============================================
+        // FUNCIONES JSONBIN.IO - NUEVAS
+        // =============================================
+
+        async function saveDataToCloud() {
+            try {
+                console.log('Guardando datos en la nube...');
+                
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_API_KEY,
+                        'X-Bin-Name': 'Tramites Vehiculares'
+                    },
+                    body: JSON.stringify({
+                        data: data,
+                        lastUpdate: new Date().toISOString(),
+                        updatedBy: currentUser ? currentUser.username : 'system'
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Datos guardados en la nube exitosamente');
+                    
+                    // También guardar localmente como respaldo
+                    saveLocalData();
+                    
+                    showToast('Datos guardados en la nube', 'success');
+                    return true;
+                } else {
+                    throw new Error('Error en la respuesta de JSONBin');
+                }
+            } catch (error) {
+                console.error('Error guardando en la nube:', error);
+                // Si falla la nube, guardar solo localmente
+                saveLocalData();
+                showToast('Datos guardados localmente (sin conexión a la nube)', 'warning');
+            }
+            return false;
+        }
+
+        async function loadDataFromCloud() {
+            try {
+                console.log('Cargando datos desde la nube...');
+                
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Datos cargados desde la nube:', result);
+                    
+                    if (result.record && result.record.data) {
+                        data = result.record.data;
+                        showToast('Datos cargados desde la nube', 'success');
+                        return true;
+                    }
+                } else {
+                    throw new Error('Error cargando desde JSONBin');
+                }
+            } catch (error) {
+                console.error('Error cargando desde la nube:', error);
+                // Si falla la nube, cargar datos locales
+                loadLocalData();
+                showToast('Datos cargados localmente', 'info');
+            }
+            return false;
+        }
+
+        function saveLocalData() {
+            localStorage.setItem('tramites_data', JSON.stringify(data));
+            console.log('Datos guardados localmente');
+        }
+
+        function loadLocalData() {
+            const savedData = localStorage.getItem('tramites_data');
+            if (savedData) {
+                try {
+                    data = JSON.parse(savedData);
+                    console.log('Datos cargados localmente');
+                } catch (error) {
+                    console.error('Error cargando datos locales:', error);
+                }
+            }
+        }
+
+        // =============================================
+        // SISTEMA DE AUTENTICACIÓN (SIN CAMBIOS)
+        // =============================================
+
+        function initializeAuth() {
+            // Crear usuarios por defecto si no existen
+            if (!localStorage.getItem('tramites_users')) {
+                const defaultUsers = [
+                    {
+                        id: 1,
+                        name: 'Administrador',
+                        username: 'admin',
+                        password: 'admin123',
+                        role: 'admin',
+                        branch: 'sucursal1'
+                    },
+                    {
+                        id: 2,
+                        name: 'Empleado 1',
+                        username: 'empleado1',
+                        password: 'emp123',
+                        role: 'empleado',
+                        branch: 'sucursal1'
+                    },
+                    {
+                        id: 3,
+                        name: 'Empleado 2',
+                        username: 'empleado2',
+                        password: 'emp123',
+                        role: 'empleado',
+                        branch: 'sucursal2'
+                    }
+                ];
+                localStorage.setItem('tramites_users', JSON.stringify(defaultUsers));
+            }
+
+            // Verificar sesión activa
+            const session = localStorage.getItem('tramites_session');
+            if (session) {
+                currentUser = JSON.parse(session);
+                
+                // Cargar datos desde la nube al iniciar
+                loadDataFromCloud().then(() => {
+                    showMainApp();
+                });
+            } else {
+                showAuthScreen();
+            }
+        }
+
+        function login(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const users = JSON.parse(localStorage.getItem('tramites_users') || '[]');
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                currentBranch = user.branch;
+                localStorage.setItem('tramites_session', JSON.stringify(user));
+                
+                // Cargar datos desde la nube al iniciar sesión
+                loadDataFromCloud().then(() => {
+                    showMainApp();
+                });
+                
+                showToast('¡Bienvenido ' + user.name + '!', 'success');
+            } else {
+                showToast('Usuario o contraseña incorrectos', 'error');
+            }
+        }
+
+        function register(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const username = document.getElementById('registerUser').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('userRole').value;
+            const branch = document.getElementById('userBranch').value;
+            
+            if (password !== confirmPassword) {
+                showToast('Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('tramites_users') || '[]');
+            
+            // Verificar si el usuario ya existe
+            if (users.find(u => u.username === username)) {
+                showToast('El usuario ya existe', 'error');
+                return;
+            }
+            
+            // Crear nuevo usuario
+            const newUser = {
+                id: Date.now(),
+                name: name,
+                username: username,
+                password: password,
+                role: role,
+                branch: branch
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('tramites_users', JSON.stringify(users));
+            
+            showToast('Usuario creado exitosamente', 'success');
+            showLoginForm();
+        }
+
+        function logout() {
+            localStorage.removeItem('tramites_session');
+            currentUser = null;
+            showToast('Sesión cerrada exitosamente', 'info');
+            showAuthScreen();
+        }
+
+        function showAuthScreen() {
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('mainContainer').classList.remove('active');
+        }
+
+        function showMainApp() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('mainContainer').classList.add('active');
+            
+            // Configurar interfaz según el usuario
+            setupUserInterface();
+            
+            // Cargar datos y actualizar interfaz
+            loadAllTables();
+            updateAdminStats();
+        }
+
+        function setupUserInterface() {
+            // Configurar avatar
+            const avatar = document.getElementById('userAvatar');
+            avatar.textContent = currentUser.name.charAt(0).toUpperCase();
+            avatar.title = `${currentUser.name} (${currentUser.role})`;
+            
+            // Mostrar selector de sucursal solo para admin
+            const branchSelector = document.getElementById('branchSelector');
+            if (currentUser.role === 'admin') {
+                branchSelector.style.display = 'block';
+                document.getElementById('currentBranch').value = currentBranch;
+            } else {
+                branchSelector.style.display = 'none';
+                currentBranch = currentUser.branch;
+            }
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function cambiarSucursal() {
+            currentBranch = document.getElementById('currentBranch').value;
+            loadAllTables();
+            updateAdminStats();
+            showToast(`Cambiado a ${currentBranch}`, 'info');
+        }
+
+        // =============================================
+        // SISTEMA DE NOTIFICACIONES (SIN CAMBIOS)
+        // =============================================
+
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            }[type] || 'fas fa-info-circle';
+
+            toast.innerHTML = `
+                <i class="${icon}"></i>
+                <span>${message}</span>
+            `;
+
+            toastContainer.appendChild(toast);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 5000);
+        }
+
+        // =============================================
+        // FUNCIONES DE GESTIÓN DE DATOS (MODIFICADAS)
+        // =============================================
+
+        // MODIFICAR todas las funciones que guardan datos para usar saveDataToCloud()
+
+        // Funciones de paquetes y trámites
+        function agregarPaquete() {
+            const paquete = {
+                id: registroEditando ? registroEditando.id : Date.now(),
+                placa: document.getElementById('paquete-placa').value,
+                tipoTramite: document.getElementById('paquete-tipo-tramite').value,
+                destino: document.getElementById('paquete-destino').value,
+                nombreCliente: document.getElementById('paquete-nombre-cliente').value,
+                cedulaCliente: document.getElementById('paquete-cedula-cliente').value,
+                direccionCliente: document.getElementById('paquete-direccion-cliente').value,
+                telefonoCliente: document.getElementById('paquete-telefono-cliente').value,
+                nombrePropietario: document.getElementById('paquete-nombre-propietario').value,
+                cedulaPropietario: document.getElementById('paquete-cedula-propietario').value,
+                direccionPropietario: document.getElementById('paquete-direccion-propietario').value,
+                telefonoPropietario: document.getElementById('paquete-telefono-propietario').value,
+                fechaIngreso: document.getElementById('paquete-fecha-ingreso').value,
+                fechaEnvio: document.getElementById('paquete-fecha-envio').value,
+                fechaRespuesta: document.getElementById('paquete-fecha-respuesta').value,
+                guardadoEn: document.getElementById('paquete-guardado-en').value,
+                referencia: document.getElementById('paquete-referencia').value,
+                gestor: document.getElementById('paquete-gestor').value,
+                observaciones: document.getElementById('paquete-observaciones').value,
+                estado: document.getElementById('paquete-estado') ? document.getElementById('paquete-estado').value : 'PENDIENTE'
+            };
+
+            if (paquete.placa && paquete.nombreCliente) {
+                if (registroEditando) {
+                    // Actualizar paquete existente
+                    const index = data[currentBranch].paquetes.findIndex(p => p.id === registroEditando.id);
+                    if (index !== -1) {
+                        data[currentBranch].paquetes[index] = paquete;
+                    }
+                    showToast('Trámite actualizado exitosamente', 'success');
+                } else {
+                    // Agregar nuevo paquete
+                    data[currentBranch].paquetes.push(paquete);
+                    showToast('Trámite agregado exitosamente', 'success');
+                }
+                
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                
+                loadPaquetesTable();
+                cerrarModal();
+                updateAdminStats();
+            } else {
+                showToast('Por favor complete los campos obligatorios', 'error');
+            }
+        }
+
+        function editarPaquete(id) {
+            const paquete = data[currentBranch].paquetes.find(p => p.id === id);
+            if (paquete) {
+                registroEditando = paquete;
+                tipoEditando = 'paquetes';
+                abrirModal('paquetes');
+                // Llenar el formulario con los datos existentes
+                setTimeout(() => {
+                    document.getElementById('paquete-placa').value = paquete.placa || '';
+                    document.getElementById('paquete-tipo-tramite').value = paquete.tipoTramite || '';
+                    document.getElementById('paquete-destino').value = paquete.destino || '';
+                    document.getElementById('paquete-nombre-cliente').value = paquete.nombreCliente || '';
+                    document.getElementById('paquete-cedula-cliente').value = paquete.cedulaCliente || '';
+                    document.getElementById('paquete-direccion-cliente').value = paquete.direccionCliente || '';
+                    document.getElementById('paquete-telefono-cliente').value = paquete.telefonoCliente || '';
+                    document.getElementById('paquete-nombre-propietario').value = paquete.nombrePropietario || '';
+                    document.getElementById('paquete-cedula-propietario').value = paquete.cedulaPropietario || '';
+                    document.getElementById('paquete-direccion-propietario').value = paquete.direccionPropietario || '';
+                    document.getElementById('paquete-telefono-propietario').value = paquete.telefonoPropietario || '';
+                    document.getElementById('paquete-fecha-ingreso').value = paquete.fechaIngreso || '';
+                    document.getElementById('paquete-fecha-envio').value = paquete.fechaEnvio || '';
+                    document.getElementById('paquete-fecha-respuesta').value = paquete.fechaRespuesta || '';
+                    document.getElementById('paquete-guardado-en').value = paquete.guardadoEn || '';
+                    document.getElementById('paquete-referencia').value = paquete.referencia || '';
+                    document.getElementById('paquete-gestor').value = paquete.gestor || '';
+                    document.getElementById('paquete-observaciones').value = paquete.observaciones || '';
+                    if (document.getElementById('paquete-estado')) {
+                        document.getElementById('paquete-estado').value = paquete.estado || 'PENDIENTE';
+                    }
+                }, 100);
+            }
+        }
+
+        function loadPaquetesTable(filtrados = null) {
+            const tbody = document.getElementById('paquetes-table');
+            tbody.innerHTML = '';
+            
+            const datos = filtrados || data[currentBranch].paquetes;
+            
+            datos.forEach(paquete => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${paquete.placa}</strong></td>
+                    <td>${paquete.tipoTramite}</td>
+                    <td>${paquete.destino}</td>
+                    <td>${paquete.nombreCliente}</td>
+                    <td>${paquete.nombrePropietario}</td>
+                    <td>${paquete.fechaIngreso}</td>
+                    <td>${paquete.fechaEnvio || 'Pendiente'}</td>
+                    <td><span class="status-badge status-${paquete.estado.toLowerCase()}">${paquete.estado}</span></td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-view" onclick="verRegistro('paquetes', ${paquete.id})">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-edit" onclick="editarPaquete(${paquete.id})">
+                                <i class="fas fa-edit"></i> Modificar
+                            </button>
+                            <button class="btn btn-delete" onclick="eliminarPaquete(${paquete.id})">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        function eliminarPaquete(id) {
+            if (confirm('¿Está seguro de eliminar este trámite?')) {
+                data[currentBranch].paquetes = data[currentBranch].paquetes.filter(paquete => paquete.id !== id);
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                loadPaquetesTable();
+                updateAdminStats();
+                showToast('Trámite eliminado exitosamente', 'success');
+            }
+        }
+
+        // Funciones de licencias
+        function agregarLicencia() {
+            const valorOficina = parseFloat(document.getElementById('licencia-valor-oficina').value) || 0;
+            const valorAbono = parseFloat(document.getElementById('licencia-valor-abono').value) || 0;
+            const saldo = valorOficina - valorAbono;
+
+            const licencia = {
+                id: registroEditando ? registroEditando.id : Date.now(),
+                nombreCliente: document.getElementById('licencia-nombre-cliente').value,
+                documento: document.getElementById('licencia-documento').value,
+                tipoTramite: document.getElementById('licencia-tipo-tramite').value,
+                categoria: document.getElementById('licencia-categoria').value,
+                escuela: document.getElementById('licencia-escuela').value,
+                valorOficina: valorOficina,
+                valorAbono: valorAbono,
+                saldo: saldo,
+                fecha: document.getElementById('licencia-fecha').value,
+                observaciones: document.getElementById('licencia-observaciones').value
+            };
+
+            if (licencia.nombreCliente && licencia.documento) {
+                if (registroEditando) {
+                    // Actualizar licencia existente
+                    const index = data[currentBranch].licencias.findIndex(l => l.id === registroEditando.id);
+                    if (index !== -1) {
+                        data[currentBranch].licencias[index] = licencia;
+                    }
+                    showToast('Licencia actualizada exitosamente', 'success');
+                } else {
+                    // Agregar nueva licencia
+                    data[currentBranch].licencias.push(licencia);
+                    showToast('Licencia agregada exitosamente', 'success');
+                }
+                
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                
+                loadLicenciasTable();
+                cerrarModal();
+                updateAdminStats();
+            } else {
+                showToast('Por favor complete los campos obligatorios', 'error');
+            }
+        }
+
+        function editarLicencia(id) {
+            const licencia = data[currentBranch].licencias.find(l => l.id === id);
+            if (licencia) {
+                registroEditando = licencia;
+                tipoEditando = 'licencias';
+                abrirModal('licencias');
+                // Llenar el formulario con los datos existentes
+                setTimeout(() => {
+                    document.getElementById('licencia-nombre-cliente').value = licencia.nombreCliente || '';
+                    document.getElementById('licencia-documento').value = licencia.documento || '';
+                    document.getElementById('licencia-tipo-tramite').value = licencia.tipoTramite || '';
+                    document.getElementById('licencia-categoria').value = licencia.categoria || '';
+                    document.getElementById('licencia-escuela').value = licencia.escuela || '';
+                    document.getElementById('licencia-valor-oficina').value = licencia.valorOficina || '';
+                    document.getElementById('licencia-valor-abono').value = licencia.valorAbono || '';
+                    document.getElementById('licencia-fecha').value = licencia.fecha || '';
+                    document.getElementById('licencia-observaciones').value = licencia.observaciones || '';
+                    calcularSaldoLicencia();
+                }, 100);
+            }
+        }
+
+        function loadLicenciasTable(filtrados = null) {
+            const tbody = document.getElementById('licencias-table');
+            tbody.innerHTML = '';
+            
+            const datos = filtrados || data[currentBranch].licencias;
+            
+            datos.forEach(licencia => {
+                const row = tbody.insertRow();
+                const saldoClass = licencia.saldo >= 0 ? 'saldo-positive' : 'saldo-negative';
+                row.innerHTML = `
+                    <td>${licencia.nombreCliente}</td>
+                    <td><strong>${licencia.documento}</strong></td>
+                    <td><span class="status-badge">${licencia.tipoTramite}</span></td>
+                    <td>${licencia.categoria}</td>
+                    <td>${licencia.escuela}</td>
+                    <td>$${licencia.valorOficina.toFixed(2)}</td>
+                    <td>$${licencia.valorAbono.toFixed(2)}</td>
+                    <td class="${saldoClass}">$${licencia.saldo.toFixed(2)}</td>
+                    <td>${licencia.fecha}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-view" onclick="verRegistro('licencias', ${licencia.id})">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-edit" onclick="editarLicencia(${licencia.id})">
+                                <i class="fas fa-edit"></i> Modificar
+                            </button>
+                            <button class="btn btn-delete" onclick="eliminarLicencia(${licencia.id})">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        function eliminarLicencia(id) {
+            if (confirm('¿Está seguro de eliminar esta licencia?')) {
+                data[currentBranch].licencias = data[currentBranch].licencias.filter(licencia => licencia.id !== id);
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                loadLicenciasTable();
+                updateAdminStats();
+                showToast('Licencia eliminada exitosamente', 'success');
+            }
+        }
+
+        // Funciones de órdenes de salida
+        function agregarOrden() {
+            const valorOficina = parseFloat(document.getElementById('orden-valor-oficina').value) || 0;
+            const valorAbono = parseFloat(document.getElementById('orden-valor-abono').value) || 0;
+            const saldo = valorOficina - valorAbono;
+
+            const orden = {
+                id: registroEditando ? registroEditando.id : Date.now(),
+                nombre: document.getElementById('orden-nombre').value,
+                cedula: document.getElementById('orden-cedula').value,
+                placa: document.getElementById('orden-placa').value,
+                direccion: document.getElementById('orden-direccion').value,
+                telefono: document.getElementById('orden-telefono').value,
+                fechaIngreso: document.getElementById('orden-fecha-ingreso').value,
+                fechaSalida: document.getElementById('orden-fecha-salida').value,
+                valorOficina: valorOficina,
+                valorAbono: valorAbono,
+                saldo: saldo,
+                estado: document.getElementById('orden-estado').value,
+                observaciones: document.getElementById('orden-observaciones').value
+            };
+
+            if (orden.nombre && orden.cedula) {
+                if (registroEditando) {
+                    // Actualizar orden existente
+                    const index = data[currentBranch].ordenes.findIndex(o => o.id === registroEditando.id);
+                    if (index !== -1) {
+                        data[currentBranch].ordenes[index] = orden;
+                    }
+                    showToast('Orden actualizada exitosamente', 'success');
+                } else {
+                    // Agregar nueva orden
+                    data[currentBranch].ordenes.push(orden);
+                    showToast('Orden agregada exitosamente', 'success');
+                }
+                
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                
+                loadOrdenesTable();
+                cerrarModal();
+                updateAdminStats();
+            } else {
+                showToast('Por favor complete los campos obligatorios', 'error');
+            }
+        }
+
+        function editarOrden(id) {
+            const orden = data[currentBranch].ordenes.find(o => o.id === id);
+            if (orden) {
+                registroEditando = orden;
+                tipoEditando = 'ordenes';
+                abrirModal('ordenes');
+                // Llenar el formulario con los datos existentes
+                setTimeout(() => {
+                    document.getElementById('orden-nombre').value = orden.nombre || '';
+                    document.getElementById('orden-cedula').value = orden.cedula || '';
+                    document.getElementById('orden-placa').value = orden.placa || '';
+                    document.getElementById('orden-direccion').value = orden.direccion || '';
+                    document.getElementById('orden-telefono').value = orden.telefono || '';
+                    document.getElementById('orden-fecha-ingreso').value = orden.fechaIngreso || '';
+                    document.getElementById('orden-fecha-salida').value = orden.fechaSalida || '';
+                    document.getElementById('orden-valor-oficina').value = orden.valorOficina || '';
+                    document.getElementById('orden-valor-abono').value = orden.valorAbono || '';
+                    document.getElementById('orden-estado').value = orden.estado || 'PENDIENTE';
+                    document.getElementById('orden-observaciones').value = orden.observaciones || '';
+                    calcularSaldoOrden();
+                }, 100);
+            }
+        }
+
+        function loadOrdenesTable(filtrados = null) {
+            const tbody = document.getElementById('ordenes-table');
+            tbody.innerHTML = '';
+            
+            const datos = filtrados || data[currentBranch].ordenes;
+            
+            datos.forEach(orden => {
+                const row = tbody.insertRow();
+                const saldoClass = orden.saldo >= 0 ? 'saldo-positive' : 'saldo-negative';
+                row.innerHTML = `
+                    <td>${orden.nombre}</td>
+                    <td><strong>${orden.cedula}</strong></td>
+                    <td><strong>${orden.placa}</strong></td>
+                    <td>${orden.fechaIngreso}</td>
+                    <td>${orden.fechaSalida || 'Pendiente'}</td>
+                    <td>$${orden.valorOficina.toFixed(2)}</td>
+                    <td>$${orden.valorAbono.toFixed(2)}</td>
+                    <td class="${saldoClass}">$${orden.saldo.toFixed(2)}</td>
+                    <td><span class="status-badge status-${orden.estado.toLowerCase()}">${orden.estado}</span></td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-view" onclick="verRegistro('ordenes', ${orden.id})">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-edit" onclick="editarOrden(${orden.id})">
+                                <i class="fas fa-edit"></i> Modificar
+                            </button>
+                            <button class="btn btn-delete" onclick="eliminarOrden(${orden.id})">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        function eliminarOrden(id) {
+            if (confirm('¿Está seguro de eliminar esta orden?')) {
+                data[currentBranch].ordenes = data[currentBranch].ordenes.filter(orden => orden.id !== id);
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                loadOrdenesTable();
+                updateAdminStats();
+                showToast('Orden eliminada exitosamente', 'success');
+            }
+        }
+
+        // Funciones de comparendos
+        function agregarComparendo() {
+            const valorOficina = parseFloat(document.getElementById('comparendo-valor-oficina').value) || 0;
+            const valorAbono = parseFloat(document.getElementById('comparendo-valor-abono').value) || 0;
+            const saldo = valorOficina - valorAbono;
+
+            const comparendo = {
+                id: registroEditando ? registroEditando.id : Date.now(),
+                nombre: document.getElementById('comparendo-nombre').value,
+                cedula: document.getElementById('comparendo-cedula').value,
+                placa: document.getElementById('comparendo-placa').value,
+                ciudad: document.getElementById('comparendo-ciudad').value,
+                tipoTramite: 'COMPARENDO',
+                fecha: document.getElementById('comparendo-fecha').value,
+                valorOficina: valorOficina,
+                valorAbono: valorAbono,
+                saldo: saldo,
+                estado: document.getElementById('comparendo-estado').value,
+                observaciones: document.getElementById('comparendo-observaciones').value
+            };
+
+            if (comparendo.nombre && comparendo.cedula) {
+                if (registroEditando) {
+                    // Actualizar comparendo existente
+                    const index = data[currentBranch].comparendos.findIndex(c => c.id === registroEditando.id);
+                    if (index !== -1) {
+                        data[currentBranch].comparendos[index] = comparendo;
+                    }
+                    showToast('Comparendo actualizado exitosamente', 'success');
+                } else {
+                    // Agregar nuevo comparendo
+                    data[currentBranch].comparendos.push(comparendo);
+                    showToast('Comparendo agregado exitosamente', 'success');
+                }
+                
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                
+                loadComparendosTable();
+                cerrarModal();
+                updateAdminStats();
+            } else {
+                showToast('Por favor complete los campos obligatorios', 'error');
+            }
+        }
+
+        function editarComparendo(id) {
+            const comparendo = data[currentBranch].comparendos.find(c => c.id === id);
+            if (comparendo) {
+                registroEditando = comparendo;
+                tipoEditando = 'comparendos';
+                abrirModal('comparendos');
+                // Llenar el formulario con los datos existentes
+                setTimeout(() => {
+                    document.getElementById('comparendo-nombre').value = comparendo.nombre || '';
+                    document.getElementById('comparendo-cedula').value = comparendo.cedula || '';
+                    document.getElementById('comparendo-placa').value = comparendo.placa || '';
+                    document.getElementById('comparendo-ciudad').value = comparendo.ciudad || '';
+                    document.getElementById('comparendo-fecha').value = comparendo.fecha || '';
+                    document.getElementById('comparendo-valor-oficina').value = comparendo.valorOficina || '';
+                    document.getElementById('comparendo-valor-abono').value = comparendo.valorAbono || '';
+                    document.getElementById('comparendo-estado').value = comparendo.estado || 'PENDIENTE';
+                    document.getElementById('comparendo-observaciones').value = comparendo.observaciones || '';
+                    calcularSaldoComparendo();
+                }, 100);
+            }
+        }
+
+        function loadComparendosTable(filtrados = null) {
+            const tbody = document.getElementById('comparendos-table');
+            tbody.innerHTML = '';
+            
+            const datos = filtrados || data[currentBranch].comparendos;
+            
+            datos.forEach(comparendo => {
+                const row = tbody.insertRow();
+                const saldoClass = comparendo.saldo >= 0 ? 'saldo-positive' : 'saldo-negative';
+                row.innerHTML = `
+                    <td>${comparendo.nombre}</td>
+                    <td><strong>${comparendo.cedula}</strong></td>
+                    <td><strong>${comparendo.placa}</strong></td>
+                    <td>${comparendo.ciudad}</td>
+                    <td>${comparendo.fecha}</td>
+                    <td>$${comparendo.valorOficina.toFixed(2)}</td>
+                    <td>$${comparendo.valorAbono.toFixed(2)}</td>
+                    <td class="${saldoClass}">$${comparendo.saldo.toFixed(2)}</td>
+                    <td><span class="status-badge status-${comparendo.estado.toLowerCase()}">${comparendo.estado}</span></td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-view" onclick="verRegistro('comparendos', ${comparendo.id})">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-edit" onclick="editarComparendo(${comparendo.id})">
+                                <i class="fas fa-edit"></i> Modificar
+                            </button>
+                            <button class="btn btn-delete" onclick="eliminarComparendo(${comparendo.id})">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        function eliminarComparendo(id) {
+            if (confirm('¿Está seguro de eliminar este comparendo?')) {
+                data[currentBranch].comparendos = data[currentBranch].comparendos.filter(comparendo => comparendo.id !== id);
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                loadComparendosTable();
+                updateAdminStats();
+                showToast('Comparendo eliminado exitosamente', 'success');
+            }
+        }
+
+        // Funciones de procesos jurídicos
+        function agregarProceso() {
+            const fechaRadicacion = new Date(document.getElementById('proceso-fecha-radicacion').value);
+            const vencimiento = new Date(fechaRadicacion);
+            vencimiento.setDate(vencimiento.getDate() + 20);
+            
+            const hoy = new Date();
+            const diffTime = vencimiento - hoy;
+            const diasFaltantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const proceso = {
+                id: registroEditando ? registroEditando.id : Date.now(),
+                nombre: document.getElementById('proceso-nombre').value,
+                cedula: document.getElementById('proceso-cedula').value,
+                proceso: document.getElementById('proceso-proceso').value,
+                fechaRadicacion: document.getElementById('proceso-fecha-radicacion').value,
+                vencimiento: vencimiento.toISOString().split('T')[0],
+                diasFaltantes: diasFaltantes,
+                estado: document.getElementById('proceso-estado').value,
+                observaciones: document.getElementById('proceso-observaciones').value
+            };
+
+            if (proceso.nombre && proceso.cedula && proceso.proceso) {
+                if (registroEditando) {
+                    // Actualizar proceso existente
+                    const index = data[currentBranch].procesos.findIndex(p => p.id === registroEditando.id);
+                    if (index !== -1) {
+                        data[currentBranch].procesos[index] = proceso;
+                    }
+                    showToast('Proceso actualizado exitosamente', 'success');
+                } else {
+                    // Agregar nuevo proceso
+                    data[currentBranch].procesos.push(proceso);
+                    showToast('Proceso agregado exitosamente', 'success');
+                }
+                
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                
+                loadProcesosTable();
+                cerrarModal();
+                updateAdminStats();
+            } else {
+                showToast('Por favor complete los campos obligatorios', 'error');
+            }
+        }
+
+        function editarProceso(id) {
+            const proceso = data[currentBranch].procesos.find(p => p.id === id);
+            if (proceso) {
+                registroEditando = proceso;
+                tipoEditando = 'procesos';
+                abrirModal('procesos');
+                // Llenar el formulario con los datos existentes
+                setTimeout(() => {
+                    document.getElementById('proceso-nombre').value = proceso.nombre || '';
+                    document.getElementById('proceso-cedula').value = proceso.cedula || '';
+                    document.getElementById('proceso-proceso').value = proceso.proceso || '';
+                    document.getElementById('proceso-fecha-radicacion').value = proceso.fechaRadicacion || '';
+                    document.getElementById('proceso-estado').value = proceso.estado || 'PENDIENTE';
+                    document.getElementById('proceso-observaciones').value = proceso.observaciones || '';
+                }, 100);
+            }
+        }
+
+        function loadProcesosTable(filtrados = null) {
+            const tbody = document.getElementById('procesos-table');
+            tbody.innerHTML = '';
+            
+            const datos = filtrados || data[currentBranch].procesos;
+            
+            datos.forEach(proceso => {
+                const row = tbody.insertRow();
+                const diasColor = proceso.diasFaltantes < 0 ? 'text-danger' : proceso.diasFaltantes < 7 ? 'text-warning' : 'text-success';
+                row.innerHTML = `
+                    <td>${proceso.nombre}</td>
+                    <td><strong>${proceso.cedula}</strong></td>
+                    <td>${proceso.proceso}</td>
+                    <td>${proceso.fechaRadicacion}</td>
+                    <td>${proceso.vencimiento}</td>
+                    <td class="${diasColor}"><strong>${proceso.diasFaltantes}</strong></td>
+                    <td><span class="status-badge status-${proceso.estado.toLowerCase()}">${proceso.estado}</span></td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-view" onclick="verRegistro('procesos', ${proceso.id})">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-edit" onclick="editarProceso(${proceso.id})">
+                                <i class="fas fa-edit"></i> Modificar
+                            </button>
+                            <button class="btn btn-delete" onclick="eliminarProceso(${proceso.id})">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        function eliminarProceso(id) {
+            if (confirm('¿Está seguro de eliminar este proceso?')) {
+                data[currentBranch].procesos = data[currentBranch].procesos.filter(proceso => proceso.id !== id);
+                // GUARDAR EN LA NUBE
+                saveDataToCloud();
+                loadProcesosTable();
+                updateAdminStats();
+                showToast('Proceso eliminado exitosamente', 'success');
+            }
+        }
+
+        // =============================================
+        // FUNCIONES RESTANTES (SIN CAMBIOS)
+        // =============================================
+
+        // Funciones de búsqueda
+        function buscarPaquetes() {
+            const termino = document.getElementById('searchPaquetes').value.toLowerCase();
+            const filtrados = data[currentBranch].paquetes.filter(item => 
+                Object.values(item).some(value => 
+                    value && value.toString().toLowerCase().includes(termino)
+                )
+            );
+            loadPaquetesTable(filtrados);
+            showToast(`${filtrados.length} resultados encontrados`, 'info');
+        }
+
+        function buscarLicencias() {
+            const termino = document.getElementById('searchLicencias').value.toLowerCase();
+            const filtrados = data[currentBranch].licencias.filter(item => 
+                Object.values(item).some(value => 
+                    value && value.toString().toLowerCase().includes(termino)
+                )
+            );
+            loadLicenciasTable(filtrados);
+            showToast(`${filtrados.length} resultados encontrados`, 'info');
+        }
+
+        function buscarOrdenes() {
+            const termino = document.getElementById('searchOrdenes').value.toLowerCase();
+            const filtrados = data[currentBranch].ordenes.filter(item => 
+                Object.values(item).some(value => 
+                    value && value.toString().toLowerCase().includes(termino)
+                )
+            );
+            loadOrdenesTable(filtrados);
+            showToast(`${filtrados.length} resultados encontrados`, 'info');
+        }
+
+        function buscarComparendos() {
+            const termino = document.getElementById('searchComparendos').value.toLowerCase();
+            const filtrados = data[currentBranch].comparendos.filter(item => 
+                Object.values(item).some(value => 
+                    value && value.toString().toLowerCase().includes(termino)
+                )
+            );
+            loadComparendosTable(filtrados);
+            showToast(`${filtrados.length} resultados encontrados`, 'info');
+        }
+
+        function buscarProcesos() {
+            const termino = document.getElementById('searchProcesos').value.toLowerCase();
+            const filtrados = data[currentBranch].procesos.filter(item => 
+                Object.values(item).some(value => 
+                    value && value.toString().toLowerCase().includes(termino)
+                )
+            );
+            loadProcesosTable(filtrados);
+            showToast(`${filtrados.length} resultados encontrados`, 'info');
+        }
+
+        // Modal functions
+        function abrirModal(tipo) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            
+            let title = '';
+            let form = '';
+            
+            switch(tipo) {
+                case 'paquetes':
+                    title = registroEditando ? 'Modificar Trámite' : 'Nuevo Trámite';
+                    form = `
+                        <form onsubmit="event.preventDefault(); agregarPaquete();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Placa *</label>
+                                    <input type="text" id="paquete-placa" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tipo de Trámite *</label>
+                                    <input type="text" id="paquete-tipo-tramite" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Destino</label>
+                                    <input type="text" id="paquete-destino">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nombre Cliente *</label>
+                                    <input type="text" id="paquete-nombre-cliente" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cédula Cliente</label>
+                                    <input type="text" id="paquete-cedula-cliente">
+                                </div>
+                                <div class="form-group">
+                                    <label>Dirección Cliente</label>
+                                    <input type="text" id="paquete-direccion-cliente">
+                                </div>
+                                <div class="form-group">
+                                    <label>Teléfono Cliente</label>
+                                    <input type="tel" id="paquete-telefono-cliente">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nombre Propietario</label>
+                                    <input type="text" id="paquete-nombre-propietario">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cédula Propietario</label>
+                                    <input type="text" id="paquete-cedula-propietario">
+                                </div>
+                                <div class="form-group">
+                                    <label>Dirección Propietario</label>
+                                    <input type="text" id="paquete-direccion-propietario">
+                                </div>
+                                <div class="form-group">
+                                    <label>Teléfono Propietario</label>
+                                    <input type="tel" id="paquete-telefono-propietario">
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha de Ingreso</label>
+                                    <div class="date-input-container">
+                                        <input type="date" id="paquete-fecha-ingreso">
+                                        <button type="button" class="date-btn" onclick="setToday('paquete-fecha-ingreso')">
+                                            <i class="fas fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha de Envío</label>
+                                    <div class="date-input-container">
+                                        <input type="date" id="paquete-fecha-envio">
+                                        <button type="button" class="date-btn" onclick="setToday('paquete-fecha-envio')">
+                                            <i class="fas fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha de Respuesta</label>
+                                    <div class="date-input-container">
+                                        <input type="date" id="paquete-fecha-respuesta">
+                                        <button type="button" class="date-btn" onclick="setToday('paquete-fecha-respuesta')">
+                                            <i class="fas fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Guardado En</label>
+                                    <input type="text" id="paquete-guardado-en">
+                                </div>
+                                <div class="form-group">
+                                    <label>Referencia</label>
+                                    <input type="text" id="paquete-referencia">
+                                </div>
+                                <div class="form-group">
+                                    <label>Gestor</label>
+                                    <input type="text" id="paquete-gestor">
+                                </div>
+                                <div class="form-group">
+                                    <label>Estado</label>
+                                    <select id="paquete-estado">
+                                        <option value="PENDIENTE">PENDIENTE</option>
+                                        <option value="ENVIADO">ENVIADO</option>
+                                        <option value="REALIZADO">REALIZADO</option>
+                                        <option value="ARCHIVADO">ARCHIVADO</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Observaciones</label>
+                                <textarea id="paquete-observaciones" rows="3"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">${registroEditando ? 'Actualizar' : 'Guardar'}</button>
+                                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'licencias':
+                    title = registroEditando ? 'Modificar Licencia' : 'Nueva Licencia';
+                    form = `
+                        <form onsubmit="event.preventDefault(); agregarLicencia();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nombre Cliente *</label>
+                                    <input type="text" id="licencia-nombre-cliente" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Documento *</label>
+                                    <input type="text" id="licencia-documento" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tipo de Trámite</label>
+                                    <select id="licencia-tipo-tramite">
+                                        <option value="">Seleccionar tipo</option>
+                                        <option value="INICIAL">INICIAL</option>
+                                        <option value="INICIAL/REFRENDACION">INICIAL/REFRENDACION</option>
+                                        <option value="REFRENDACION">REFRENDACION</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Categoría</label>
+                                    <input type="text" id="licencia-categoria">
+                                </div>
+                                <div class="form-group">
+                                    <label>Escuela</label>
+                                    <input type="text" id="licencia-escuela">
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor Oficina</label>
+                                    <input type="number" id="licencia-valor-oficina" step="0.01" onchange="calcularSaldoLicencia()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor Abono</label>
+                                    <input type="number" id="licencia-valor-abono" step="0.01" onchange="calcularSaldoLicencia()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Saldo</label>
+                                    <input type="number" id="licencia-saldo" step="0.01" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha</label>
+                                    <div class="date-input-container">
+                                        <input type="date" id="licencia-fecha">
+                                        <button type="button" class="date-btn" onclick="setToday('licencia-fecha')">
+                                            <i class="fas fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Observaciones</label>
+                                <textarea id="licencia-observaciones" rows="3"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">${registroEditando ? 'Actualizar' : 'Guardar'}</button>
+                                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'ordenes':
+                    title = registroEditando ? 'Modificar Orden de Salida' : 'Nueva Orden de Salida';
+                    form = `
+                        <form onsubmit="event.preventDefault(); agregarOrden();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nombre *</label>
+                                    <input type="text" id="orden-nombre" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cédula *</label>
+                                    <input type="text" id="orden-cedula" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Placa</label>
+                                    <input type="text" id="orden-placa">
+                                </div>
+                                <div class="form-group">
+                                    <label>Dirección</label>
+                                    <input type="text" id="orden-direccion">
+                                </div>
+                                <div class="form-group">
+                                    <label>Teléfono</label>
+                                    <input type="tel" id="orden-telefono">
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha de Ingreso</label>
+                                    <div class="date-input-container">
+                                        <input type="date" id="orden-fecha-ingreso">
+                                        <button type="button" class="date-btn" onclick="setToday('orden-fecha-ingreso')">
+                                            <i class="fas fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha de Salida</label>
+                                    <div class="date-input-container">
+                                        <input type="date" id="orden-fecha-salida">
+                                        <button type="button" class="date-btn" onclick="setToday('orden-fecha-salida')">
+                                            <i class="fas fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor Oficina</label>
+                                    <input type="number" id="orden-valor-oficina" step="0.01" onchange="calcularSaldoOrden()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor Abono</label>
+                                    <input type="number" id="orden-valor-abono" step="0.01" onchange="calcularSaldoOrden()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Saldo</label>
+                                    <input type="number" id="orden-saldo" step="0.01" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Estado</label>
+                                    <select id="orden-estado">
+                                        <option value="PENDIENTE">PENDIENTE</option>
+                                        <option value="EN PROCESO">EN PROCESO</option>
+                                        <option value="COMPLETADO">COMPLETADO</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Observaciones</label>
+                                <textarea id="orden-observaciones" rows="3"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">${registroEditando ? 'Actualizar' : 'Guardar'}</button>
+                                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'comparendos':
+                    title = registroEditando ? 'Modificar Comparendo' : 'Nuevo Comparendo';
+                    form = `
+                        <form onsubmit="event.preventDefault(); agregarComparendo();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nombre *</label>
+                                    <input type="text" id="comparendo-nombre" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cédula *</label>
+                                    <input type="text" id="comparendo-cedula" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Placa</label>
+                                    <input type="text" id="comparendo-placa">
+                                </div>
+                                <div class="form-group">
+                                    <label>Ciudad</label>
+                                    <input type="text" id="comparendo-ciudad">
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha</label>
+                                    <div class="date-input-container">
+                                        <input type="date" id="comparendo-fecha">
+                                        <button type="button" class="date-btn" onclick="setToday('comparendo-fecha')">
+                                            <i class="fas fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor Oficina</label>
+                                    <input type="number" id="comparendo-valor-oficina" step="0.01" onchange="calcularSaldoComparendo()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor Abono</label>
+                                    <input type="number" id="comparendo-valor-abono" step="0.01" onchange="calcularSaldoComparendo()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Saldo</label>
+                                    <input type="number" id="comparendo-saldo" step="0.01" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Estado</label>
+                                    <select id="comparendo-estado">
+                                        <option value="PENDIENTE">PENDIENTE</option>
+                                        <option value="PAGADO">PAGADO</option>
+                                        <option value="EN PROCESO">EN PROCESO</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Observaciones</label>
+                                <textarea id="comparendo-observaciones" rows="3"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">${registroEditando ? 'Actualizar' : 'Guardar'}</button>
+                                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'procesos':
+                    title = registroEditando ? 'Modificar Proceso Jurídico' : 'Nuevo Proceso Jurídico';
+                    form = `
+                        <form onsubmit="event.preventDefault(); agregarProceso();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nombre *</label>
+                                    <input type="text" id="proceso-nombre" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cédula *</label>
+                                    <input type="text" id="proceso-cedula" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Proceso *</label>
+                                    <input type="text" id="proceso-proceso" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha de Radicación</label>
+                                    <div class="date-input-container">
+                                        <input type="date" id="proceso-fecha-radicacion">
+                                        <button type="button" class="date-btn" onclick="setToday('proceso-fecha-radicacion')">
+                                            <i class="fas fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Estado</label>
+                                    <select id="proceso-estado">
+                                        <option value="PENDIENTE">PENDIENTE</option>
+                                        <option value="EN PROCESO">EN PROCESO</option>
+                                        <option value="VENCIDO">VENCIDO</option>
+                                        <option value="COMPLETADO">COMPLETADO</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Observaciones</label>
+                                <textarea id="proceso-observaciones" rows="3"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">${registroEditando ? 'Actualizar' : 'Guardar'}</button>
+                                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+            }
+            
+            modalTitle.textContent = title;
+            modalBody.innerHTML = form;
+            modal.classList.add('show');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal').classList.remove('show');
+            registroEditando = null;
+            tipoEditando = null;
+        }
+
+        function mostrarPerfil() {
+            const modal = document.getElementById('profileModal');
+            const body = document.getElementById('profile-body');
+            
+            body.innerHTML = `
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" value="${currentUser.name}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Usuario:</label>
+                    <input type="text" value="${currentUser.username}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Rol:</label>
+                    <input type="text" value="${currentUser.role}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Sucursal:</label>
+                    <input type="text" value="${currentUser.branch}" readonly>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        function cerrarPerfilModal() {
+            document.getElementById('profileModal').classList.remove('show');
+        }
+
+        // Función para establecer fecha actual
+        function setToday(inputId) {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById(inputId).value = today;
+        }
+
+        // Funciones de cálculo de saldo
+        function calcularSaldoLicencia() {
+            const valorOficina = parseFloat(document.getElementById('licencia-valor-oficina').value) || 0;
+            const valorAbono = parseFloat(document.getElementById('licencia-valor-abono').value) || 0;
+            const saldo = valorOficina - valorAbono;
+            document.getElementById('licencia-saldo').value = saldo.toFixed(2);
+        }
+
+        function calcularSaldoOrden() {
+            const valorOficina = parseFloat(document.getElementById('orden-valor-oficina').value) || 0;
+            const valorAbono = parseFloat(document.getElementById('orden-valor-abono').value) || 0;
+            const saldo = valorOficina - valorAbono;
+            document.getElementById('orden-saldo').value = saldo.toFixed(2);
+        }
+
+        function calcularSaldoComparendo() {
+            const valorOficina = parseFloat(document.getElementById('comparendo-valor-oficina').value) || 0;
+            const valorAbono = parseFloat(document.getElementById('comparendo-valor-abono').value) || 0;
+            const saldo = valorOficina - valorAbono;
+            document.getElementById('comparendo-saldo').value = saldo.toFixed(2);
+        }
+
+        // Función de exportación
+        function exportarDatos(tipo) {
+            const datos = data[currentBranch][tipo];
+            const csv = convertirACSV(datos);
+            descargarCSV(csv, `${tipo}_${currentBranch}.csv`);
+            showToast(`Datos de ${tipo} exportados exitosamente`, 'success');
+        }
+
+        function convertirACSV(datos) {
+            if (!datos || datos.length === 0) return '';
+            
+            const headers = Object.keys(datos[0]);
+            const csvRows = [];
+            
+            // Agregar headers
+            csvRows.push(headers.join(','));
+            
+            // Agregar datos
+            for (const row of datos) {
+                const values = headers.map(header => {
+                    const value = row[header];
+                    return `"${value}"`;
+                });
+                csvRows.push(values.join(','));
+            }
+            
+            return csvRows.join('\n');
+        }
+
+        function descargarCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Función para cargar todas las tablas
+        function loadAllTables() {
+            loadPaquetesTable();
+            loadLicenciasTable();
+            loadOrdenesTable();
+            loadComparendosTable();
+            loadProcesosTable();
+        }
+
+        // Función para actualizar estadísticas
+        function updateAdminStats() {
+            const branchData = data[currentBranch];
+            const total = branchData.paquetes.length + branchData.licencias.length + 
+                         branchData.ordenes.length + branchData.comparendos.length + 
+                         branchData.procesos.length;
+            
+            const realizados = branchData.paquetes.filter(e => e.estado === 'REALIZADO').length +
+                              branchData.licencias.filter(l => l.tipoTramite === 'REFRENDACION').length +
+                              branchData.ordenes.filter(o => o.estado === 'COMPLETADO').length +
+                              branchData.comparendos.filter(c => c.estado === 'PAGADO').length +
+                              branchData.procesos.filter(p => p.estado === 'COMPLETADO').length;
+            
+            const pendientes = branchData.paquetes.filter(e => e.estado === 'PENDIENTE').length +
+                              branchData.licencias.filter(l => l.tipoTramite === 'INICIAL').length +
+                              branchData.ordenes.filter(o => o.estado === 'PENDIENTE').length +
+                              branchData.comparendos.filter(c => c.estado === 'PENDIENTE').length +
+                              branchData.procesos.filter(p => p.estado === 'PENDIENTE').length;
+            
+            const vencidos = branchData.procesos.filter(p => p.diasFaltantes < 0).length;
+            
+            document.getElementById('totalTramites').textContent = total;
+            document.getElementById('tramitesRealizados').textContent = realizados;
+            document.getElementById('tramitesPendientes').textContent = pendientes;
+            document.getElementById('tramitesVencidos').textContent = vencidos;
+        }
+
+        // Ver registro function
+        function verRegistro(tipo, id) {
+            let registro;
+            switch(tipo) {
+                case 'paquetes':
+                    registro = data[currentBranch].paquetes.find(p => p.id === id);
+                    break;
+                case 'licencias':
+                    registro = data[currentBranch].licencias.find(l => l.id === id);
+                    break;
+                case 'ordenes':
+                    registro = data[currentBranch].ordenes.find(o => o.id === id);
+                    break;
+                case 'comparendos':
+                    registro = data[currentBranch].comparendos.find(c => c.id === id);
+                    break;
+                case 'procesos':
+                    registro = data[currentBranch].procesos.find(p => p.id === id);
+                    break;
+            }
+            
+            if (registro) {
+                let detalles = '<div class="form-grid">';
+                for (const [key, value] of Object.entries(registro)) {
+                    if (key !== 'id') {
+                        const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        detalles += `
+                            <div class="form-group">
+                                <label>${label}:</label>
+                                <input type="text" value="${value || ''}" readonly>
+                            </div>
+                        `;
+                    }
+                }
+                detalles += '</div>';
+                
+                const modal = document.getElementById('modal');
+                document.getElementById('modal-title').textContent = `Ver ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                document.getElementById('modal-body').innerHTML = detalles;
+                modal.classList.add('show');
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar autenticación
+            initializeAuth();
+            
+            // Event listeners para formularios de auth
+            document.getElementById('loginForm').addEventListener('submit', login);
+            document.getElementById('registerForm').addEventListener('submit', register);
+            
+            // Event listeners para cambiar entre formularios
+            document.getElementById('showRegister').addEventListener('click', function(e) {
+                e.preventDefault();
+                showRegisterForm();
+            });
+            
+            document.getElementById('showLogin').addEventListener('click', function(e) {
+                e.preventDefault();
+                showLoginForm();
+            });
+            
+            // Toggle password visibility
+            document.getElementById('togglePassword').addEventListener('click', function() {
+                const passwordInput = document.getElementById('loginPassword');
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+            
+            // Event listeners para el menú de usuario
+            document.getElementById('userAvatar').addEventListener('click', function() {
+                const dropdown = document.getElementById('userDropdown');
+                dropdown.classList.toggle('show');
+            });
+            
+            document.getElementById('userProfile').addEventListener('click', function(e) {
+                e.preventDefault();
+                mostrarPerfil();
+                document.getElementById('userDropdown').classList.remove('show');
+            });
+            
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+            
+            // Event listeners para tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remover clase activa de todas las tabs
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                    
+                    // Activar tab seleccionada
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                });
+            });
+            
+            // Event listeners para búsqueda en tiempo real
+            ['searchPaquetes', 'searchLicencias', 'searchOrdenes', 'searchComparendos', 'searchProcesos'].forEach(id => {
+                document.getElementById(id).addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        const btnFunction = {
+                            'searchPaquetes': buscarPaquetes,
+                            'searchLicencias': buscarLicencias,
+                            'searchOrdenes': buscarOrdenes,
+                            'searchComparendos': buscarComparendos,
+                            'searchProcesos': buscarProcesos
+                        }[id];
+                        btnFunction();
+                    }
+                });
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const userMenu = document.querySelector('.user-menu');
+                const dropdown = document.getElementById('userDropdown');
+                
+                if (!userMenu.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+            
+            // Close modals when clicking outside
+            window.onclick = function(event) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (event.target === modal) {
+                        modal.classList.remove('show');
+                    }
+                });
+            };
+        });
+    </script>
+</body>
+</html>
